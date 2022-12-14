@@ -1,0 +1,11 @@
+{
+  "extends": "./node_modules/gts/tsconfig-google.json",
+  "include": [ // all of these are typescript files that should be compiled using the `compilerOptions`
+    "src/**/*.ts"
+  ],
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": "build",
+    "baseUrl": ".", // Where to start for relative imports (Unused for non-relative imports)
+  },
+}
