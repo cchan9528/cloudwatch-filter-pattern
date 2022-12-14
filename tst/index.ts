@@ -1,5 +1,5 @@
 import {describe, expect, test} from '@jest/globals';
-import {doSomeStuff} from 'src/foo/index';
+import {doSomeStuff} from 'foo/index';
 
 describe('basic test', () => {
   test('does some stuff', () => {

@@ -4,8 +4,19 @@
     "src/**/*.ts"
   ],
   "compilerOptions": {
-    "rootDir": ".",
     "outDir": "build",
-    "baseUrl": ".", // Where to start for relative imports (Unused for non-relative imports)
+    "rootDir": ".",
+    "baseUrl": "./src", // Where to start for relative imports (Unused for non-relative imports)
   },
 }
+
+
+
+// ts-jest is a plugin for Jest
+// lets you write in TS for jest
+// how it works
+// 1. preprocess the Typescript test files 
+//   - picks up compilerOptions from tsconfig
+//     - proof: notice that `include` only includes "src/**/*.ts" - no "tst" files
+// 2. Run Jest on compiled output Javascript files
+
