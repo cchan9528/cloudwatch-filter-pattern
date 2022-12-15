@@ -93,7 +93,8 @@ export default {
   // [Key] Tell jest what to look for
   // [Value] Tell jest where you find it. If you're using typescript, this would be in the ***compiled*** directory; thus, depends on TS Config Compiler Options `baseUrl` and `path`
   moduleNameMapper: {
-    "^foo/(.*)$": "<rootDir>/src/$1"
+    "^src/(.*)$": "<rootDir>/src/$1",
+    "^foo/index" : "<rootDir>/src/index"
   },
 
   // An array of regexp pattern strings, matched against all module paths before considered 'visible' to the module loader

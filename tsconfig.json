@@ -18,5 +18,29 @@
 // 1. preprocess the Typescript test files 
 //   - picks up compilerOptions from tsconfig
 //     - proof: notice that `include` only includes "src/**/*.ts" - no "tst" files
+//
 // 2. Run Jest on compiled output Javascript files
 
+// I think it works like this:
+// 1. for every import
+//   1. try to find the module
+//     1. in node_modules (additional search directories can be configured if desired)
+//     2. if not found, then look in local modules using the (baseUrl from compiler settings) + (target import path)
+//   2. if the module was found, 
+//     1. if the (unedited/no baseUrl prepended) target import matches a regex pattern in moduleNameMapper, then map
+//   3. else, fail test
+
+// This is exemplified when 
+//      moduleNameMapper: {
+//        "^src/(.*)$": "<rootDir>/src/$1",
+//        "^foo/index" : "<rootDir>/src/index"
+//      },
+// And
+//      "baseUrl": "./src",
+// And
+//      import {doSomeStuff} from 'foo/index';
+//
+// 1. It'll try to look up foo/index with baseUrl ./src -> ./src/foo/index -> <project_root>/src/foo/index
+// 2. It exists in the filesystem, so try mapping
+// 3. It matches the regex "^foo/index" (not "^src/(.*)$"), so map to "<rootDir>/src/index"
+// 4. The test passes with console.log() output "Try!" from src/index.ts instead of "'Try npm run lint/fix!'" , which is from src/foo/index.ts
