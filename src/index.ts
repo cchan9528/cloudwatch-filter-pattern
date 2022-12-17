@@ -1,5 +1,6 @@
-const NON_ALPHANUMERIC_TERM: RegExp = new RegExp('\W');
-const ENCLOSED_IN_DOUBLE_QUOTES: RegExp = new RegExp('^".*"$');
+const NON_ALPHANUMERIC_TERM: RegExp = new RegExp(/\W/);
+const ENCLOSED_IN_DOUBLE_QUOTES: RegExp = new RegExp(/^".*"$/);
+const ONLY_WHITESPACE: RegExp = new RegExp(/^\s+$/);
 
 function isValidPattern(pattern: string) {
   return (
@@ -24,7 +25,9 @@ function getFilterPatterns(filter: string) {
       pattern += tokens[i];
       i += 1;
     }
-    patterns.push(pattern);
+    if (!ONLY_WHITESPACE.test(pattern)) {
+      patterns.push(pattern);
+    }
     i += 1;
   }
 
@@ -33,8 +36,14 @@ function getFilterPatterns(filter: string) {
 
 export function isCloudwatchLogFilterMatch(cwlog: string, filter: string) {
   const patterns: Array<string> = getFilterPatterns(filter);
+  console.log(patterns);
   for (const pattern of patterns) {
-    if (!isValidPattern(pattern) || !cwlog.includes(pattern)) {
+    if (
+      !isValidPattern(pattern) ||
+      !cwlog.includes(
+        ENCLOSED_IN_DOUBLE_QUOTES.test(pattern) ? pattern.slice(1, -1) : pattern
+      )
+    ) {
       return false;
     }
   }
