@@ -21,12 +21,45 @@ describe('Using filter patterns to match terms in log events', () => {
     expect(isCloudwatchLogFilterMatch('#Cloud #watch', '"#Cloud" #watch')).toBeFalsy();
     expect(isCloudwatchLogFilterMatch('#Cloud #watch', '"#Cloud" "#watch"')).toBeTruthy();
   });
-  // test('Match a single term', () => {
-  //   test('"ERROR" matches "[ERROR 400] BAD REQUEST"', () => {});
-  //   test('"ERROR" matches "[ERROR 400] BAD REQUEST"', () => {});
-  //   test('"ERROR" matches "[ERROR 400] BAD REQUEST"', () => {});
-  //   test('"ERROR" matches "[ERROR 400] BAD REQUEST"', () => {});
-  // });
+  test('Match a single term', () => {
+    [
+      '[ERROR 400] BAD REQUEST',
+      '[ERROR 401] UNAUTHORIZED REQUEST',
+      '[ERROR 419] MISSING ARGUMENTS',
+      '[ERROR 420] INVALID ARGUMENTS',
+    ].forEach((cwlog: string) => {
+      expect(isCloudwatchLogFilterMatch(cwlog, 'ERROR')).toBeTruthy();
+    });
+  });
+  test('Match multiple terms', () => {
+    [
+      '[ERROR 419] MISSING ARGUMENTS',
+      '[ERROR 420] INVALID ARGUMENTS',
+    ].forEach((cwlog: string) => {
+      expect(isCloudwatchLogFilterMatch(cwlog, 'ERROR ARGUMENTS')).toBeTruthy();
+    });
+
+    [
+      '[ERROR 400] BAD REQUEST',
+      '[ERROR 401] UNAUTHORIZED REQUEST',
+    ].forEach((cwlog: string) => {
+      expect(isCloudwatchLogFilterMatch(cwlog, 'ERROR ARGUMENTS')).toBeFalsy();
+    });
+  });
+
+  test('Match single and multiple terms', () => {
+    [
+      '[ERROR 400] BAD REQUEST',
+      '[ERROR 401] UNAUTHORIZED REQUEST',
+      '[ERROR 419] MISSING ARGUMENTS',
+      '[ERROR 420] INVALID ARGUMENTS',
+    ].forEach((cwlog: string) => {
+      expect(isCloudwatchLogFilterMatch(cwlog, '?ERROR ?ARGUMENTS')).toBeTruthy();
+    });
+
+    // TODO: verify false if doesn't have **at least one** term
+    expect(isCloudwatchLogFilterMatch('false', '?ERROR ?ARGUMENTS')).toBeFalsy();
+  });
 });
 
 
