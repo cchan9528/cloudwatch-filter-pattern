@@ -1,24 +1,42 @@
-console.log('Try npm run lint/fix!');
+const NON_ALPHANUMERIC_TERM: RegExp = new RegExp('\W');
+const ENCLOSED_IN_DOUBLE_QUOTES: RegExp = new RegExp('^".*"$');
 
-const longString =
-  'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer ut aliquet diam.';
-
-const trailing = 'Semicolon';
-
-const why = 'am I tabbed?';
-
-export function doSomeStuff(
-  withThis: string,
-  andThat: string,
-  andThose: string[]
-) {
-  //function on one line
-  if (!andThose.length) {
-    return false;
-  }
-  console.log(withThis);
-  console.log(andThat);
-  console.dir(andThose);
-  return;
+function isValidPattern(pattern: string) {
+  return (
+    ENCLOSED_IN_DOUBLE_QUOTES.test(pattern) ||
+    !NON_ALPHANUMERIC_TERM.test(pattern)
+  );
 }
-// TODO: more examples
+
+function getFilterPatterns(filter: string) {
+  const patterns : Array<string> = [];
+
+  const tokens : Array<string> = filter.split(/(\s)+/);
+  let i : number = 0;
+  while (i < tokens.length){
+    let pattern : string = tokens[i];
+    if (tokens[i][0] === '"') {
+      pattern = '';
+      while (tokens[i].slice(-1) !== '"') {
+        pattern += tokens[i];
+        i += 1;
+      }
+      pattern += tokens[i];
+      i += 1;
+    }
+    patterns.push(pattern);
+    i += 1;
+  }
+
+  return patterns;
+}
+
+export function isCloudwatchLogFilterMatch(cwlog: string, filter: string) {
+  const patterns: Array<string> = getFilterPatterns(filter);
+  for (const pattern of patterns) {
+    if (!isValidPattern(pattern) || !cwlog.includes(pattern)) {
+      return false;
+    }
+  }
+  return true;
+}
