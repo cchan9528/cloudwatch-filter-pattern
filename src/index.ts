@@ -1,6 +1,5 @@
 const NON_ALPHANUMERIC_TERM: RegExp = new RegExp(/\W/);
 const ENCLOSED_IN_DOUBLE_QUOTES: RegExp = new RegExp(/^".*"$/);
-const ONLY_WHITESPACE: RegExp = new RegExp(/^\s+$/);
 
 function isValidPattern(pattern: string) {
   return (
@@ -10,27 +9,26 @@ function isValidPattern(pattern: string) {
 }
 
 function getFilterPatterns(filter: string) {
-  const patterns : Array<string> = [];
+  const patterns: Array<string> = [];
 
-  const tokens : Array<string> = filter.split(/(\s)+/);
-  let i : number = 0;
-  while (i < tokens.length){
-    let pattern : string = tokens[i];
-    if (tokens[i][0] === '"') {
-      pattern = '';
-      while (tokens[i].slice(-1) !== '"') {
-        pattern += tokens[i];
-        i += 1;
+  let i = 0;
+  while (i < filter.length) {
+    let pattern : string = '';
+    let isPhrase : boolean = false;
+    while (i < filter.length && (filter[i] !== ' ' || isPhrase)) {
+      pattern += filter[i];
+      if (filter[i] === '"') {
+        isPhrase = !isPhrase;
       }
-      pattern += tokens[i];
       i += 1;
     }
-    if (!ONLY_WHITESPACE.test(pattern)) {
+
+    if (pattern !== '') {
       patterns.push(pattern);
     }
     i += 1;
   }
-
+  
   return patterns;
 }
 
