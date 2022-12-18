@@ -1,15 +1,20 @@
-const IS_NON_ALPHANUMERIC_TERM: RegExp = new RegExp(/\W/);
+const IS_NON_ALPHANUMERIC_PATTERN: RegExp = new RegExp(/\W/);
 const IS_ENCLOSED_IN_DOUBLE_QUOTES: RegExp = new RegExp(/^".*"$/);
-const IS_OPTIONAL_PATTERN: RegExp = new RegExp(/^\?.+/);
+const IS_ONLY_WHITESPACE: RegExp = new RegExp(/^\s*$/);
 
-function isValidPattern(pattern: string) {
-  return (
-    IS_ENCLOSED_IN_DOUBLE_QUOTES.test(pattern) ||
-    !IS_NON_ALPHANUMERIC_TERM.test(pattern)
-  );
+function cwlogContains(cwlog: string, pattern: string): boolean {
+  if (IS_ENCLOSED_IN_DOUBLE_QUOTES.test(pattern)) {
+    pattern = pattern.slice(1, -1);
+    if (IS_ONLY_WHITESPACE.test(pattern)) {
+      return true;
+    }
+  } else if (IS_NON_ALPHANUMERIC_PATTERN.test(pattern)) {
+    return false;
+  }
+  return cwlog.includes(pattern);
 }
 
-function getFilterPatterns(filter: string) {
+function getFilterPatterns(filter: string): Array<string> {
   const patterns: Array<string> = [];
 
   let i = 0;
@@ -29,27 +34,29 @@ function getFilterPatterns(filter: string) {
     }
     i += 1;
   }
-  
   return patterns;
 }
 
-export function isCloudwatchLogFilterMatch(cwlog: string, filter: string) {
-  const patterns: Array<string> = getFilterPatterns(filter);
-  for (const pattern of patterns) {
-    if (
-      !isValidPattern(pattern) ||
-      !cwlog.includes(
-        IS_ENCLOSED_IN_DOUBLE_QUOTES.test(pattern) ? pattern.slice(1, -1) : pattern
-      )
-    ) {
-      if (
-        IS_OPTIONAL_PATTERN.test(pattern) && 
-        cwlog.includes(pattern.slice(1))
-      ) {
-        break;
+export function isCloudwatchLogFilterMatch(
+  cwlog: string,
+  filter: string
+): boolean {
+  let numMatches : number = 0;
+  for (const pattern of getFilterPatterns(filter)) {
+    if (pattern[0] === '?') {
+      if (cwlogContains(cwlog, pattern.slice(1))) {
+        return true;
       }
-      return false;
+    } else if (pattern[0] === '-') {
+      if (cwlogContains(cwlog, pattern.slice(1))) {
+        return false;
+      }
+    } else {
+      if (!cwlogContains(cwlog, pattern)) {
+        return false;
+      }
+      numMatches += 1;
     }
   }
-  return true;
+  return numMatches > 0;
 }

@@ -53,13 +53,57 @@ describe('Using filter patterns to match terms in log events', () => {
       '[ERROR 401] UNAUTHORIZED REQUEST',
       '[ERROR 419] MISSING ARGUMENTS',
       '[ERROR 420] INVALID ARGUMENTS',
+      'ARGUMENTS IS THE ONLY KEYWORD IN LOG',
     ].forEach((cwlog: string) => {
       expect(isCloudwatchLogFilterMatch(cwlog, '?ERROR ?ARGUMENTS')).toBeTruthy();
     });
 
-    // TODO: verify false if doesn't have **at least one** term
+    // TODO: verify should be false if doesn't have **at least one** term
     expect(isCloudwatchLogFilterMatch('false', '?ERROR ?ARGUMENTS')).toBeFalsy();
   });
+
+  test('Match exact phrases', () => {
+    expect(isCloudwatchLogFilterMatch('[ERROR 500] INTERNAL SERVER ERROR', '"INTERNAL SERVER ERROR"')).toBeTruthy();
+    expect(isCloudwatchLogFilterMatch('[ERROR 500] INTERNAL SERVER', '"INTERNAL SERVER ERROR"')).toBeFalsy();
+  });
+
+  test('Include and exclude terms', () => {
+    [
+      '[ERROR 400] BAD REQUEST',
+      '[ERROR 401] UNAUTHORIZED REQUEST',
+    ].forEach((cwlog: string) => {
+      expect(isCloudwatchLogFilterMatch(cwlog, 'ERROR -ARGUMENTS')).toBeTruthy();
+    });
+
+
+    [
+      '[ERROR 419] MISSING ARGUMENTS',
+      '[ERROR 420] INVALID ARGUMENTS',
+    ].forEach((cwlog: string) => {
+      expect(isCloudwatchLogFilterMatch(cwlog, 'ERROR -ARGUMENTS')).toBeFalsy();
+    });
+  })
+
+  test("Match everything", () => {
+    const cwlogs: Array<string> = [
+      '[ERROR 400] BAD REQUEST',
+      '[ERROR 401] UNAUTHORIZED REQUEST',
+      '[ERROR 419] MISSING ARGUMENTS',
+      '[ERROR 420] INVALID ARGUMENTS',
+      'ARGUMENTS IS THE ONLY KEYWORD IN LOG',
+      '',
+      ' ',
+    ];
+    
+    cwlogs.forEach((cwlog: string) => {
+      expect(isCloudwatchLogFilterMatch(cwlog, '" "')).toBeTruthy();
+    });
+
+    // TODO: verify if "" should also match everything (i.e. no space)
+    cwlogs.forEach((cwlog: string) => {
+      expect(isCloudwatchLogFilterMatch(cwlog, '""')).toBeTruthy();
+    });
+  })
 });
 
 
