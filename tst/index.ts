@@ -30,6 +30,19 @@ describe('Using filter patterns to match terms in log events', () => {
     ].forEach((cwlog: string) => {
       expect(isCloudwatchLogFilterMatch(cwlog, 'ERROR')).toBeTruthy();
     });
+
+    ['hello', '"world"', '"{"'].forEach((filter: string) => {
+      expect(
+        isCloudwatchLogFilterMatch('{"hello" : "world"}', filter)
+      ).toBeTruthy();
+    });
+
+
+    ['{', '"'].forEach((filter: string) => {
+      expect(
+        isCloudwatchLogFilterMatch('{"hello" : "world"}', filter)
+      ).toBeFalsy();
+    });
   });
   test('Match multiple terms', () => {
     [
@@ -107,7 +120,45 @@ describe('Using filter patterns to match terms in log events', () => {
 });
 
 
-// describe('Using metric filters to match terms and extract values from JSON log events', () => {});
+// describe('Using metric filters to match terms and extract values from JSON log events', () => {
+//   test('Metric filters that match strings', () => {
+
+
+// // I checked manually in console under
+// // CWLogs > Log Groups > Actions > Create Metric Filter
+// // 
+// // Basically it's like this
+// // You can either only basic search (typical search in log group), or you can create a metric filter = search + metric count
+// // 
+// // [Basic] only has the 'basic' pattern matching enabled (no JSON special handling possible - only can double quote it for exact match since nonalphanumeric)
+// // [Metric Filter] has both kinds of searches enabled
+// //    - can search by 'basic' patterns
+// //    - can search using special JSON syntax
+// //        - This is extended so you can map values to specifc metric attributes based on log syntax
+// //
+// // The CW Logs "Tester" is under the "Create a Metric Filter" action, so both are enabled
+// //    - Searching using 'basic' syntax matches results ***even inside of JSON-formatted logs***
+// //        - This is of course because JSON logs are simply strings that "conveniently" adhere to the JSON syntax
+// //    - Searching using 'special' (e.g. JSON) syntax only possibly means you are trying to look for special kinds of logs (e.g. JSON)
+
+
+
+//     expect(
+//       isCloudwatchLogFilterMatch(
+//         '{ "eventType" : "UpdateTrail" })',
+//         '{ $.eventType = "UpdateTrail" }'
+//       )
+//     ).toBeTruthy();
+
+//     expect(
+//       isCloudwatchLogFilterMatch(
+//         '{ "eventType" : "UpdateTrail" })',
+//         '{ $.eventType = UpdateTrail }'
+//       )
+//     ).toBeTruthy();
+//   });
+// });
+
 // describe('Using metric filters to extract values from space-delimited log events', () => {});
 // describe('Configuring metric values for a metric filter', () => {});
 // describe('Publishing dimensions with metrics from values in JSON or space-delimited log events', () => {});

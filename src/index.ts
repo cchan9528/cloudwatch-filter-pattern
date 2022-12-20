@@ -1,5 +1,6 @@
 const IS_NON_ALPHANUMERIC_PATTERN: RegExp = new RegExp(/\W/);
 const IS_ENCLOSED_IN_DOUBLE_QUOTES: RegExp = new RegExp(/^".*"$/);
+const IS_ENCLOSED_IN_BRACES: RegExp = new RegExp(/^{.*}$/);
 const IS_ONLY_WHITESPACE: RegExp = new RegExp(/^\s*$/);
 
 function cwlogContains(cwlog: string, pattern: string): boolean {
@@ -37,7 +38,22 @@ function getFilterPatterns(filter: string): Array<string> {
   return patterns;
 }
 
-export function isCloudwatchLogFilterMatch(
+function isCloudwatchLogMetricFilterMatch(
+  cwlog: string,
+  filter: string
+): boolean {
+  try {
+    cwlog = JSON.parse(cwlog);
+    filter = JSON.parse(filter);
+  } catch (e) {
+    return false;
+  }
+
+  // To Be Implemented;
+  return false;
+}
+
+function isCloudwatchLogBasicFilterMatch(
   cwlog: string,
   filter: string
 ): boolean {
@@ -59,4 +75,13 @@ export function isCloudwatchLogFilterMatch(
     }
   }
   return numMatches > 0;
+}
+
+export function isCloudwatchLogFilterMatch(
+  cwlog: string,
+  filter: string
+): boolean {
+  return IS_ENCLOSED_IN_BRACES.test(filter)
+    ? isCloudwatchLogFilterMatch(cwlog, filter)
+    : isCloudwatchLogBasicFilterMatch(cwlog, filter);
 }
